@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vanessa V</title>
-<meta name="description" content="Vanessa V.">
+<meta name="description" content="Vanessa V — creative lead and product designer.">
 <meta property="og:image" content="media/share-image.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit&family=Inter:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Inter:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -19,7 +19,7 @@
     /* Paper: a barely-there dot grid over a very soft, cool wash.
        Dot strength: the .08 alpha. Spacing: --dot. Where dots show: the mask in body::after. */
     --dot:22px;
-    --dots:radial-gradient(circle at center, rgba(52,62,74,0.8) 0 .8px, transparent 1.4px);
+    --dots:radial-gradient(circle at center, rgba(52,62,74,.22) 0 .8px, transparent 1.4px);
     --wash:
       radial-gradient(70vw 60vh at 15% 15%, rgba(250,251,252,.7), transparent 70%),
       radial-gradient(60vw 60vh at 90% 85%, rgba(232,236,240,.55), transparent 70%),
@@ -47,12 +47,14 @@
     content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
     background:var(--dots) 0 0/var(--dot) var(--dot);
      -webkit-mask-image:
+      radial-gradient(36vw 16vh at 86% 22%, rgba(0,0,0,.65), transparent 80%),
       radial-gradient(42vw 34vh at 80% 42%, #000, transparent 78%),
       radial-gradient(48vw 14vh at 62% 20%, rgba(0,0,0,.7), transparent 80%),
       radial-gradient(40vw 14vh at 70% 84%, rgba(0,0,0,.5), transparent 80%),
       radial-gradient(30vw 24vh at 52% 74%, rgba(0,0,0,.55), transparent 80%),
       radial-gradient(28vw 22vh at 30% 22%, rgba(0,0,0,.3), transparent 80%);
             mask-image:
+      radial-gradient(36vw 16vh at 86% 22%, rgba(0,0,0,.65), transparent 80%),
       radial-gradient(42vw 34vh at 80% 42%, #000, transparent 78%),
       radial-gradient(48vw 14vh at 62% 20%, rgba(0,0,0,.7), transparent 80%),
       radial-gradient(40vw 14vh at 70% 84%, rgba(0,0,0,.5), transparent 80%),
@@ -319,7 +321,7 @@
 body{ font-size:14px; line-height:1.6; }      /* base size for everything else */
 
 /* intro heading: "Quiet work, carefully made" */
-.intro .intro-title{ font-size:18px; line-height:1.1; letter-spacing:-.02em; }
+.intro .intro-title{ font-size:18px; line-height:1.1; letter-spacing:-.02em; margin-bottom:12px; color:#2a2c2d; max-width:400px; }
 
 /* intro text: "Vanessa V is a creative…" */
 .intro .intro-copy{ font-size:12px; line-height:1.6; }
@@ -354,8 +356,8 @@ body{ font-size:14px; line-height:1.6; }      /* base size for everything else *
           <!-- Replace this SVG with <img src="Profile_pic.jpeg" alt="Profile"> -->
           <img src="media/Profile_pic.jpeg" alt="Profile pic" style="width:100%;height:100%;object-fit:cover">
         </div>
-        <p class="intro-title reveal d2">Quiet work, carefully made</p>
-        <p class="intro-copy reveal d3">Vanessa V is a person.</p>
+        <h1 class="intro-title reveal d2">Quiet work, carefully made</h1>
+        <p class="intro-copy reveal d3">Vanessa V is a creative lead and product designer. Her multidisciplinary practice spans across design, writing, and creative direction.</p>
         <a href="#diary" class="hint reveal d4" id="scrollHint">Scroll
           <svg viewBox="0 0 30 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 5h29M24 .5 29 5l-5 4.5"/></svg>
         </a>
@@ -365,6 +367,45 @@ body{ font-size:14px; line-height:1.6; }      /* base size for everything else *
       <figure class="card wide video">
         <div class="frame"><div class="art">
           <video muted loop playsinline preload="none" data-src="media/01-Thirds.mp4" aria-label="Thirds app"></video>
+        </div></div>
+      </figure>
+
+  <figure class="card wide video">
+        <div class="frame"><div class="art">
+          <video muted loop playsinline preload="none" data-src="media/02-Thirds.mp4" aria-label="Thirds app"></video>
+        </div></div>
+      </figure>
+
+    <figure class="card wide video">
+        <div class="frame" style="aspect-ratio: 640/396"><div class="art">
+          <video muted loop playsinline preload="none" data-src="media/03-Salty.mp4" aria-label="Salty Stencil website"></video>
+        </div></div>
+      </figure>
+
+   <figure class="card wide video">
+        <div class="frame"><div class="art">
+          <video muted loop playsinline preload="none" data-src="media/04-Cielo.mp4" aria-label="Cielo app"></video>
+        </div></div>
+      </figure>
+
+  <figure class="card tall">
+        <div class="frame"><div class="art"><svg viewBox="0 0 358 461" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1ede7"/><stop offset="1" stop-color="#e0d9cf"/></linearGradient>
+          <linearGradient id="g1b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9c0b3"/><stop offset="1" stop-color="#ddd6cb"/></linearGradient></defs>
+          <rect width="358" height="461" fill="url(#g1)"/>
+          <rect y="338" width="358" height="123" fill="#d8d0c4"/>
+          <path d="M120 338V190a59 59 0 0 1 118 0v148z" fill="url(#g1b)"/>
+          <polygon points="250,0 358,0 358,250 140,461 40,461" fill="#fff" opacity=".35"/>
+          <rect x="166" y="300" width="14" height="38" rx="3" fill="#2b2926"/>
+          <path d="M173 300c-2-30 -14-42 -22-58M173 300c3-26 12-38 20-50M173 300c0-20 -2-36 0-60" stroke="#6f7566" stroke-width="1.4" fill="none"/>
+          <ellipse cx="190" cy="340" rx="44" ry="4" fill="#000" opacity=".08"/>
+          <rect width="358" height="461" filter="url(#grain)" opacity=".18"/>
+        </svg></div></div>
+      </figure>
+
+ <figure class="card wide video">
+        <div class="frame"><div class="art">
+          <video muted loop playsinline preload="none" data-src="media/05-te.mp4" aria-label="te Sound Popups"></video>
         </div></div>
       </figure>
 
@@ -487,6 +528,7 @@ body{ font-size:14px; line-height:1.6; }      /* base size for everything else *
   <div class="diary-head">
     <div>
       <h1 id="diaryTitle">Diary</h1>
+      <p>Small moments, kept.</p>
     </div>
     <span class="n" id="diaryCount"></span>
   </div>
@@ -528,7 +570,7 @@ body{ font-size:14px; line-height:1.6; }      /* base size for everything else *
     </div>
     <div class="done" aria-live="polite">
       <h2>Almost there</h2>
-      <p>Your email app should open with the message ready to send. If it didn't, copy the message and send it to <span class="addr">test@gmail.com</span>.</p>
+      <p>Your email app should open with the message ready to send. If it didn't, copy the message and send it to <span class="addr">hello@vvworks.com</span>.</p>
       <div class="done-actions">
         <button class="send" id="copyBtn">Copy message</button>
         <button class="send" id="againBtn">Write another</button>
@@ -539,7 +581,7 @@ body{ font-size:14px; line-height:1.6; }      /* base size for everything else *
 
 <script>
 (() => {
-  const CONTACT_EMAIL = "test@gmail.com"; // placeholder — change to the real address
+  const CONTACT_EMAIL = "hello@vvworks.com"; // placeholder — change to the real address
   const body = document.body;
   const track = document.getElementById("track");
   const cards = [...track.querySelectorAll(".card")];
@@ -548,11 +590,30 @@ body{ font-size:14px; line-height:1.6; }      /* base size for everything else *
   const count = document.getElementById("count");
   const diaryLink = document.getElementById("diaryLink");
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // videos: autoplay quietly; for people who prefer less motion, pause and show controls instead
-  document.querySelectorAll("video").forEach(v => {
-    if (reduce){ v.pause(); v.controls = true; }
-    else { v.muted = true; const p = v.play(); if (p && p.catch) p.catch(() => { v.controls = true; }); }
-  });
+  // videos: each one loads only as it comes near the screen, then plays quietly.
+  // Visitors who prefer less motion get the video paused, with play controls.
+  const lazyVideos = [...document.querySelectorAll("video[data-src]")];
+  function wakeVideos(){
+    const aheadX = 0, aheadY = 0;   // load only once a video actually appears on screen
+    lazyVideos.forEach(v => {
+      if (v.getAttribute("src")) return;              // already loaded
+      const r = v.getBoundingClientRect();
+      if (!r.width) return;                           // hidden (e.g. while on the Diary page)
+      const near = r.right > -aheadX && r.left < innerWidth + aheadX &&
+                   r.bottom > -aheadY && r.top < innerHeight + aheadY;
+      if (!near) return;
+          v.preload = "auto";                              // fetch the video so its first frame can show
+      v.src = v.dataset.src;
+      v.muted = true;
+      // if the video ends up paused (autoplay blocked, or "reduce motion" is on),
+      // show its first frame instead of a grey box (Safari needs this small nudge)
+      const showFirstFrame = () => { if (v.paused && v.readyState >= 2) v.currentTime = 0.001; };
+      v.addEventListener("loadeddata", showFirstFrame, { once:true });
+      if (reduce) v.controls = true;
+      else { const p = v.play(); if (p && p.catch) p.catch(() => { v.controls = true; showFirstFrame(); }); }
+    });
+  }
+  window.addEventListener("scroll", wakeVideos, { passive:true });
 
   let maxX = 0, target = 0, current = 0, vw = innerWidth;
   const clamp = v => Math.min(maxX, Math.max(0, v));
@@ -580,6 +641,7 @@ body{ font-size:14px; line-height:1.6; }      /* base size for everything else *
   });
   function frame(){
     requestAnimationFrame(frame);
+    wakeVideos();
     if (!isHome() || !horiz) return;
     current += (target - current) * (reduce ? 1 : 0.085);
     if (Math.abs(target - current) < 0.05) current = target;
