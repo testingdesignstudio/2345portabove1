@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vanessa V</title>
+<meta name="description" content="Vanessa V.">
+<meta property="og:image" content="media/share-image.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit&family=Inter:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ink:#0c0e0f;
+    --muted:#8a8784;
+    --line:#d9d6d2;
+    --bg:#f4f5f6;                 /* cool whiteish slate */
+    /* Paper: a barely-there dot grid over a very soft, cool wash.
+       Dot strength: the .08 alpha. Spacing: --dot. Where dots show: the mask in body::after. */
+    --dot:22px;
+    --dots:radial-gradient(circle at center, rgba(52,62,74,0.8) 0 .8px, transparent 1.4px);
+    --wash:
+      radial-gradient(70vw 60vh at 15% 15%, rgba(250,251,252,.7), transparent 70%),
+      radial-gradient(60vw 60vh at 90% 85%, rgba(232,236,240,.55), transparent 70%),
+      linear-gradient(165deg, #f6f7f8, #f1f3f5);
+    --pad:clamp(20px,4.6vw,48px);
+    --cw:min(35vw, calc((100svh - 250px) / 1.29), 440px);   /* card width */
+    --gap:clamp(48px,8vw,128px);
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"Inter",system-ui,sans-serif; color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* the paper stays put while the diary scrolls */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:var(--wash);
+  }
+
+
+  /* Dots live on their own layer and are masked into a few soft patches,
+     fading away over the intro text (left), the nav (top) and the footer (bottom). */
+  body::after{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:var(--dots) 0 0/var(--dot) var(--dot);
+     -webkit-mask-image:
+      radial-gradient(42vw 34vh at 80% 42%, #000, transparent 78%),
+      radial-gradient(48vw 14vh at 62% 20%, rgba(0,0,0,.7), transparent 80%),
+      radial-gradient(40vw 14vh at 70% 84%, rgba(0,0,0,.5), transparent 80%),
+      radial-gradient(30vw 24vh at 52% 74%, rgba(0,0,0,.55), transparent 80%),
+      radial-gradient(28vw 22vh at 30% 22%, rgba(0,0,0,.3), transparent 80%);
+            mask-image:
+      radial-gradient(42vw 34vh at 80% 42%, #000, transparent 78%),
+      radial-gradient(48vw 14vh at 62% 20%, rgba(0,0,0,.7), transparent 80%),
+      radial-gradient(40vw 14vh at 70% 84%, rgba(0,0,0,.5), transparent 80%),
+      radial-gradient(30vw 24vh at 52% 74%, rgba(0,0,0,.55), transparent 80%),
+      radial-gradient(28vw 22vh at 30% 22%, rgba(0,0,0,.3), transparent 80%);
+  }
+
+  /* the diary has captions everywhere, so the dots step back further */
+  body.view-diary::after{opacity:.55}
+  @media (max-width:767px){
+    /* on phones the intro fills the screen: keep dots to the lower edge only */
+    body::after{
+      -webkit-mask-image:radial-gradient(70vw 16vh at 70% 82%, rgba(0,0,0,.5), transparent 80%);
+              mask-image:radial-gradient(70vw 16vh at 70% 82%, rgba(0,0,0,.5), transparent 80%);
+    }
+  }
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  /* ---------- Nav ---------- */
+  .nav{
+    position:fixed;inset:0 0 auto 0;z-index:50;height:84px;
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+    padding:0 var(--pad);background:transparent;transition:background .4s;
+  }
+  /* in the diary the grid scrolls under the nav, so give it a soft veil */
+  body.view-diary .nav{
+    background:linear-gradient(rgba(244,245,247,.94) 55%,rgba(244,245,247,0));
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+  }
+  .nav-left{justify-self:start}
+  .nav-right{justify-self:end}
+  .link{position:relative;display:inline-block;padding:4px 0;letter-spacing:.01em}
+  .link::after{
+    content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;background:currentColor;
+    transform:scaleX(0);transform-origin:right;transition:transform .5s var(--ease);
+  }
+  .link:hover::after,.link:focus-visible::after{transform:scaleX(1);transform-origin:left}
+  .logo{font-size:17px;letter-spacing:-.01em;font-weight:500}
+  .logo span{color:var(--muted);font-weight:400}
+
+
+  /* ---------- Horizontal scroll ---------- */
+  /* Home: a fixed stage; the wheel / swipe drives the track directly */
+  .stage{position:fixed;inset:0;overflow:hidden;touch-action:none}
+  html:has(body.view-home){overflow:hidden;overscroll-behavior:none}
+  body.view-home{overflow:hidden;overscroll-behavior:none}
+  body.view-diary .stage{display:none}
+  body.view-home .diary{display:none}
+  body.view-diary .progress{display:none}
+  body.view-diary .foot{position:static;background:none}
+  .link.active::after{transform:scaleX(1)}
+  .track{
+    position:absolute;top:0;left:0;height:100%;
+    display:flex;align-items:center;gap:var(--gap);
+    padding:0 var(--pad);will-change:transform;
+  }
+
+
+/* ===== Name in the header ===== */
+.logo{
+  font-family:"Outfit";
+  font-size:24px;
+  font-weight:600;
+  Letter-spacing:0;
+  color:#1f2a33;            /* colour of "Vanessa" */
+}
+.logo span{
+  color:#1f2a33;            /* colour of "V" */
+  font-weight:400;
+}
+
+
+  /* intro */
+  .intro{flex:0 0 auto;width:clamp(300px,36vw,500px);padding-right:clamp(0px,3vw,40px)}
+  .avatar{
+    width:68px;height:68px;border-radius:50%;overflow:hidden;margin-bottom:30px;
+    background:#ece7e0;
+  }
+  .avatar svg{display:block;width:100%;height:100%}
+  .intro h1{
+    font-weight:400;font-size:clamp(32px,3.9vw,46px);line-height:1.1;letter-spacing:-.025em;
+    margin-bottom:22px;
+  }
+  .intro p{max-width:400px;color:#2a2c2d}
+  .intro p + p{margin-top:12px}
+  .hint{
+    display:inline-flex;align-items:center;gap:14px;margin-top:34px;
+    font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
+  }
+  .hint svg{width:30px;transition:transform .6s var(--ease)}
+  .hint:hover svg{transform:translateX(6px)}
+
+
+/* ===== "Scroll" link ===== */
+#scrollHint{
+  font-size:10px;
+  font-weight:400;
+  letter-spacing:.08em;
+  text-transform:uppercase;          /* delete this line for normal "Scroll" instead of "SCROLL" */
+}
+
+
+  /* cards */
+  .card{flex:0 0 auto;width:var(--cw)}
+  .frame{position:relative;overflow:hidden;background:#eee;width:100%}
+  .card.tall .frame{aspect-ratio:358/461}
+  .card.wide .frame{aspect-ratio:358/269}
+  .art{position:absolute;inset:-2% -8%;will-change:transform;transition:scale 1.1s var(--ease)}
+  .art svg,.art img{display:block;width:100%;height:100%;object-fit:cover}
+  .card:hover .art{scale:1.04}
+  .cap{display:flex;justify-content:space-between;margin-top:12px;font-size:15px}
+  .cap .yr{color:var(--ink)}
+  /* the video keeps its own 2910×2176 shape and is shown as large as the screen allows */
+  .card.video{width:min(calc((100svh - 190px) * 2910 / 2176), 66vw, 700px)}
+  .card.video .frame{aspect-ratio:2910/2176;background:transparent}
+  .card.video .art{inset:0;transform:none!important}
+  .card.video:hover .art{scale:1}
+  .art video{display:block;width:100%;height:100%;object-fit:cover}
+
+
+
+  /* ---------- Footer ---------- */
+  .foot{
+    position:fixed;inset:auto 0 0 0;z-index:20;height:72px;
+    display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad);
+    background:transparent;
+  }
+  .progress{display:flex;align-items:center;gap:14px;font-size:12px;letter-spacing:.08em;font-weight:500}
+  .bar{width:90px;height:1px;background:var(--line);position:relative;overflow:hidden}
+  .bar i{position:absolute;inset:0;background:var(--ink);transform-origin:left;transform:scaleX(0)}
+
+
+  /* ---------- Contact overlay ---------- */
+  .contact{
+    position:fixed;inset:0;z-index:40;
+    background:var(--wash), var(--bg);   /* form text sits here, so no dots */
+    display:grid;place-items:center;padding:110px var(--pad) 80px;overflow-y:auto;
+    opacity:0;visibility:hidden;transition:opacity .6s var(--ease),visibility 0s linear .6s;
+  }
+  .contact.open{opacity:1;visibility:visible;transition:opacity .6s var(--ease)}
+  .contact-inner{width:min(520px,100%);transform:translateY(24px);transition:transform .8s var(--ease)}
+  .contact.open .contact-inner{transform:none}
+  .contact h2{font-weight:400;font-size:clamp(32px,3.9vw,46px);letter-spacing:-.025em;line-height:1.1;margin-bottom:12px}
+  .contact .lede{color:#55585a;margin-bottom:44px}
+  .field{position:relative;margin-bottom:30px}
+  .field label{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;margin-bottom:6px}
+  .field input,.field textarea{
+    width:100%;font:inherit;font-size:16px;color:var(--ink);background:transparent;
+    border:0;border-bottom:1px solid var(--line);padding:10px 0;outline:none;border-radius:0;
+    transition:border-color .3s;
+  }
+  .field textarea{resize:vertical;min-height:110px;line-height:1.55}
+  .field input:focus,.field textarea:focus{border-color:var(--ink)}
+  .field .err{position:absolute;right:0;top:0;font-size:12px;color:#a2482f;opacity:0;transition:opacity .2s}
+  .field.invalid .err{opacity:1}
+  .field.invalid input,.field.invalid textarea{border-color:#a2482f}
+  .count{font-size:12px;color:var(--muted);text-align:right;margin-top:6px}
+  .send{
+    display:inline-flex;align-items:center;gap:14px;margin-top:8px;padding:16px 0;
+    font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
+  }
+  .send svg{width:30px;transition:transform .6s var(--ease)}
+  .send:hover svg{transform:translateX(6px)}
+  .done{display:none}
+  .done p{color:#55585a;margin-bottom:10px}
+  .done .addr{color:var(--ink);border-bottom:1px solid var(--line)}
+  .done-actions{display:flex;gap:28px;margin-top:28px;flex-wrap:wrap}
+  .sent .form{display:none}
+  .sent .done{display:block}
+  body.locked{overflow:hidden}
+
+
+  /* entry animation */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity 1.1s var(--ease),transform 1.1s var(--ease)}
+  .loaded .reveal{opacity:1;transform:none}
+  .loaded .reveal.d1{transition-delay:.1s}.loaded .reveal.d2{transition-delay:.2s}
+  .loaded .reveal.d3{transition-delay:.3s}.loaded .reveal.d4{transition-delay:.45s}
+
+
+  /* ---------- Diary grid ---------- */
+  .diary{padding:132px var(--pad) 40px}
+  .diary-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:56px}
+  .diary-head h1{font-weight:400;font-size:clamp(32px,3.9vw,46px);line-height:1.1;letter-spacing:-.025em}
+  .diary-head p{color:#55585a;margin-top:10px}
+  .diary-head .n{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;white-space:nowrap}
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:48px clamp(16px,2vw,28px)}
+  .entry{opacity:0;transform:translateY(16px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+  .entry.in{opacity:1;transform:none}
+  .entry .frame{aspect-ratio:4/5}
+  .entry .art{inset:0}
+  .entry:hover .art{scale:1.05}
+  .entry .cap{font-size:14px;margin-top:10px;flex-direction:column;gap:0;line-height:1.45}
+  .entry .cap span:last-child{color:var(--muted);white-space:nowrap}
+  @media (max-width:1199px){.grid{grid-template-columns:repeat(4,1fr)}}
+  @media (max-width:899px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+  /* tablets held upright: bigger gallery images so the screen doesn't feel empty */
+  @media (min-width:768px) and (orientation:portrait){
+    :root{--cw:min(52vw, calc((100svh - 260px) / 1.29), 460px)}
+  }
+
+  /* ---------- Phones: everything becomes a simple vertical scroll ---------- */
+  @media (max-width:767px){
+    :root{--gap:48px}
+    html:has(body.view-home){overflow:visible}
+    body.view-home{overflow-x:hidden;overflow-y:auto}
+    .stage{position:static;overflow:visible;touch-action:auto}
+    .track{
+      position:static;height:auto;transform:none!important;
+      flex-direction:column;align-items:stretch;
+      padding:112px var(--pad) 8px;
+    }
+    .intro,.outro{width:auto;padding:0}
+    .intro{padding-bottom:8px}
+    .intro .hint svg{transform:rotate(90deg)}
+    .intro .hint:hover svg{transform:rotate(90deg) translateX(4px)}
+    .card,.card.video{width:100%;padding-top:0}            /* one image per row */
+    .card .art{inset:0;transform:none!important}
+    .outro{padding:24px 0 8px}
+    .nav{height:68px;background:linear-gradient(rgba(244,245,247,.94) 55%,rgba(244,245,247,0))}
+    .foot{position:static;height:auto;padding:36px var(--pad) 40px}
+    .progress{display:none}
+    .diary{padding-top:104px}
+    .diary-head{margin-bottom:36px}
+    .grid{grid-template-columns:repeat(2,1fr);gap:28px 14px}   /* two small images per row */
+    .entry .cap{font-size:13px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{transition-duration:.01ms!important}
+  }
+/* Diary: keep images small on every screen (never wider than 15px) */
+.grid{grid-template-columns:repeat(auto-fill, minmax(120px, 150px));justify-content:start}
+@media (max-width:767px){
+  .grid{grid-template-columns:repeat(2, 1fr)}
+}
+/* ===== My layout tweaks (desktop & tablet only; phones stay as they are) ===== */
+@media (min-width:768px){
+
+  /* 3. Wider side margins: moves "Diary" and the intro right, "Contact" left */
+  :root{ --pad: clamp(24px, 8vw, 120px); }
+
+  /* 2. Space between gallery items */
+  .track{ gap:8px; }
+  .intro{ margin-right:48px; }   /* a bit of breathing room after the intro text */
+
+  /* 1. Every gallery image and video is 460px tall; width follows its shape */
+  .card, .card.video{ width:auto; }
+  .card .frame{ height:460px; width:auto; }
+}
+
+
+/* ===== Video download deterrents ===== */
+.card.video video{
+  pointer-events:none;      /* clicks and right-clicks land on the frame, not the video */
+  user-select:none;
+  -webkit-user-drag:none;   /* stops dragging the video to the desktop or a new tab */
+}
+/* visitors who've turned on "reduce motion" get play controls, so keep those clickable */
+.card.video video[controls]{ pointer-events:auto; }
+
+
+/* ===== Text sizes ===== */
+body{ font-size:14px; line-height:1.6; }      /* base size for everything else */
+
+/* intro heading: "Quiet work, carefully made" */
+.intro .intro-title{ font-size:18px; line-height:1.1; letter-spacing:-.02em; }
+
+/* intro text: "Vanessa V is a creative…" */
+.intro .intro-copy{ font-size:12px; line-height:1.6; }
+
+/* footer: "© Vanessa V" */
+.foot > span{ font-size:12px; }
+
+/* menu links: Diary and Contact (not your name) */
+.nav .link{ font-size:14px; }
+
+</style>
+</head>
+<body class="view-home">
+
+<!-- Shared film-grain filter used by the placeholder artwork -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0"/></filter>
+</svg>
+
+<header class="nav">
+  <a href="#diary" class="link nav-left" id="diaryLink">Diary</a>
+  <a href="#" class="logo" id="logo" aria-label="Vanessa V, back to start">Vanessa<span>V</span></a>
+  <button class="link nav-right" id="contactBtn" aria-haspopup="dialog" aria-controls="contact">Contact</button>
+</header>
+
+<main class="stage" id="stage">
+    <div class="track" id="track">
+
+      <!-- Intro -->
+      <section class="intro">
+        <div class="avatar reveal d1" aria-label="Portrait of V">
+          <!-- Replace this SVG with <img src="Profile_pic.jpeg" alt="Profile"> -->
+          <img src="media/Profile_pic.jpeg" alt="Profile pic" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <p class="intro-title reveal d2">Quiet work, carefully made</p>
+        <p class="intro-copy reveal d3">Vanessa V is a person.</p>
+        <a href="#diary" class="hint reveal d4" id="scrollHint">Scroll
+          <svg viewBox="0 0 30 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 5h29M24 .5 29 5l-5 4.5"/></svg>
+        </a>
+      </section>
+
+      <!-- Video: first item. Files live in the media/ folder next to this page. -->
+      <figure class="card wide video">
+        <div class="frame"><div class="art">
+          <video autoplay muted loop playsinline preload="auto" aria-label="test app">
+            <source src="media/Test.mp4" type="video/mp4">
+          </video>
+        </div></div>
+      </figure>
+
+      <!-- Gallery: to swap in real photos, replace each <svg> inside .art with <img src="..." alt="..."> -->
+      <figure class="card tall">
+        <div class="frame"><div class="art"><svg viewBox="0 0 358 461" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1ede7"/><stop offset="1" stop-color="#e0d9cf"/></linearGradient>
+          <linearGradient id="g1b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9c0b3"/><stop offset="1" stop-color="#ddd6cb"/></linearGradient></defs>
+          <rect width="358" height="461" fill="url(#g1)"/>
+          <rect y="338" width="358" height="123" fill="#d8d0c4"/>
+          <path d="M120 338V190a59 59 0 0 1 118 0v148z" fill="url(#g1b)"/>
+          <polygon points="250,0 358,0 358,250 140,461 40,461" fill="#fff" opacity=".35"/>
+          <rect x="166" y="300" width="14" height="38" rx="3" fill="#2b2926"/>
+          <path d="M173 300c-2-30 -14-42 -22-58M173 300c3-26 12-38 20-50M173 300c0-20 -2-36 0-60" stroke="#6f7566" stroke-width="1.4" fill="none"/>
+          <ellipse cx="190" cy="340" rx="44" ry="4" fill="#000" opacity=".08"/>
+          <rect width="358" height="461" filter="url(#grain)" opacity=".18"/>
+        </svg></div></div>
+      </figure>
+
+      <figure class="card wide">
+        <div class="frame"><div class="art"><svg viewBox="0 0 358 269" preserveAspectRatio="xMidYMid slice">
+          <defs><radialGradient id="g2" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#faf8f5"/><stop offset=".7" stop-color="#d4ccc0"/><stop offset="1" stop-color="#b8afa2"/></radialGradient></defs>
+          <rect width="358" height="269" fill="#e9e4dc"/>
+          <rect y="186" width="358" height="83" fill="#d9d2c7"/>
+          <ellipse cx="150" cy="188" rx="58" ry="7" fill="#000" opacity=".1"/>
+          <circle cx="140" cy="142" r="46" fill="url(#g2)"/>
+          <rect x="216" y="118" width="30" height="70" rx="2" fill="#9aa294"/>
+          <ellipse cx="231" cy="118" rx="15" ry="3" fill="#b3baad"/>
+          <rect width="358" height="269" filter="url(#grain)" opacity=".18"/>
+        </svg></div></div>
+      </figure>
+
+      <figure class="card tall">
+        <div class="frame"><div class="art"><svg viewBox="0 0 358 461" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b3835"/><stop offset=".25" stop-color="#2a2826"/><stop offset=".5" stop-color="#3d3a37"/><stop offset=".75" stop-color="#262422"/><stop offset="1" stop-color="#36332f"/></linearGradient></defs>
+          <rect width="358" height="461" fill="#e8e3db"/>
+          <rect x="214" width="144" height="400" fill="url(#g3)"/>
+          <rect y="400" width="358" height="61" fill="#cfc7bb"/>
+          <rect x="52" y="64" width="96" height="126" fill="#f4f1ec" stroke="#cbbfae" stroke-width="3"/>
+          <path d="M82 84c22 6 34 30 22 52s-10 34 4 44H72c-8-30 20-40 2-62-8-10 0-30 8-34z" fill="#1f1d1b"/>
+          <rect x="120" y="300" width="80" height="60" rx="6" fill="#bfb8ad"/>
+          <rect x="114" y="260" width="12" height="104" rx="5" fill="#b3aca1"/>
+          <path d="M126 360l-6 40M196 360l6 40" stroke="#2a2826" stroke-width="3"/>
+          <rect width="358" height="461" filter="url(#grain)" opacity=".16"/>
+        </svg></div></div>
+      </figure>
+
+      <figure class="card wide">
+        <div class="frame"><div class="art"><svg viewBox="0 0 358 269" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcd6cd"/><stop offset="1" stop-color="#c7bfb3"/></linearGradient></defs>
+          <rect width="358" height="269" fill="url(#g4)"/>
+          <ellipse cx="179" cy="214" rx="74" ry="8" fill="#000" opacity=".1"/>
+          <ellipse cx="179" cy="194" rx="58" ry="20" fill="#8f877c"/>
+          <ellipse cx="182" cy="160" rx="42" ry="16" fill="#a79f93"/>
+          <ellipse cx="177" cy="132" rx="30" ry="13" fill="#bdb5a9"/>
+          <ellipse cx="180" cy="110" rx="18" ry="9" fill="#d3ccc1"/>
+          <rect width="358" height="269" filter="url(#grain)" opacity=".2"/>
+        </svg></div></div>
+      </figure>
+
+      <figure class="card tall">
+        <div class="frame"><div class="art"><svg viewBox="0 0 358 461" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="g5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfc5b8"/><stop offset="1" stop-color="#e6e0d7"/></linearGradient></defs>
+          <rect width="358" height="461" fill="#ece7e0"/>
+          <g fill="url(#g5)">
+            <path d="M30 360V170a40 40 0 0 1 80 0v190z"/>
+            <path d="M139 360V170a40 40 0 0 1 80 0v190z"/>
+            <path d="M248 360V170a40 40 0 0 1 80 0v190z"/>
+          </g>
+          <rect y="360" width="358" height="101" fill="#ddd6cb"/>
+          <polygon points="30,360 110,360 150,461 50,461" fill="#fff" opacity=".35"/>
+          <polygon points="139,360 219,360 262,461 162,461" fill="#fff" opacity=".35"/>
+          <polygon points="248,360 328,360 358,420 358,461 272,461" fill="#fff" opacity=".35"/>
+          <rect width="358" height="461" filter="url(#grain)" opacity=".16"/>
+        </svg></div></div>
+      </figure>
+
+      <figure class="card wide">
+        <div class="frame"><div class="art"><svg viewBox="0 0 358 269" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="g6" x1="0" y1="0" x2="1" y2=".4">
+            <stop offset="0" stop-color="#eeeae4"/><stop offset=".2" stop-color="#e2ddd5"/><stop offset=".35" stop-color="#f2efea"/>
+            <stop offset=".55" stop-color="#dfd9d0"/><stop offset=".75" stop-color="#efebe5"/><stop offset="1" stop-color="#e0dad1"/></linearGradient></defs>
+          <rect width="358" height="269" fill="url(#g6)"/>
+          <rect x="250" y="150" width="16" height="74" rx="7" fill="#f8f6f2" stroke="#d8d1c6"/>
+          <path d="M258 152c-2-30 4-58 -6-86" stroke="#6f7566" stroke-width="1.6" fill="none"/>
+          <circle cx="252" cy="62" r="12" fill="#fbfaf7"/><circle cx="252" cy="62" r="4" fill="#e7dcc6"/>
+          <ellipse cx="262" cy="226" rx="30" ry="4" fill="#000" opacity=".08"/>
+          <rect width="358" height="269" filter="url(#grain)" opacity=".16"/>
+        </svg></div></div>
+      </figure>
+
+      <figure class="card tall">
+        <div class="frame"><div class="art"><svg viewBox="0 0 358 461" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="g7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9ddd1"/><stop offset=".62" stop-color="#d4b49c"/><stop offset=".62" stop-color="#a8978a"/><stop offset="1" stop-color="#8a7c70"/></linearGradient></defs>
+          <rect width="358" height="461" fill="url(#g7)"/>
+          <circle cx="179" cy="250" r="42" fill="#f5e9dc" opacity=".9"/>
+          <rect x="0" y="286" width="358" height="2" fill="#efe1d2" opacity=".6"/>
+          <rect x="140" y="300" width="78" height="2" fill="#f5e9dc" opacity=".5"/>
+          <rect x="155" y="316" width="48" height="2" fill="#f5e9dc" opacity=".35"/>
+          <rect width="358" height="461" filter="url(#grain)" opacity=".18"/>
+        </svg></div></div>
+      </figure>
+
+      <figure class="card wide">
+        <div class="frame"><div class="art"><svg viewBox="0 0 358 269" preserveAspectRatio="xMidYMid slice">
+          <rect width="358" height="269" fill="#e3ded6"/>
+          <polygon points="0,170 358,150 358,269 0,269" fill="#f2efea"/>
+          <ellipse cx="170" cy="182" rx="66" ry="9" fill="#000" opacity=".1"/>
+          <path d="M112 140h116a58 40 0 0 1 -116 0z" fill="#2f2d2a"/>
+          <ellipse cx="170" cy="140" rx="58" ry="7" fill="#45423e"/>
+          <rect width="358" height="269" filter="url(#grain)" opacity=".18"/>
+        </svg></div></div>
+      </figure>
+    </div>
+</main>
+
+<!-- Diary: a simple grid. Entries are generated in the script below (DIARY list). -->
+<section class="diary" aria-labelledby="diaryTitle">
+  <div class="diary-head">
+    <div>
+      <h1 id="diaryTitle">Diary</h1>
+    </div>
+    <span class="n" id="diaryCount"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<footer class="foot">
+  <span>© Vanessa V</span>
+  <div class="progress" aria-hidden="true"><span id="count">01 / 08</span><div class="bar"><i id="bar"></i></div></div>
+</footer>
+
+<!-- Contact -->
+<div class="contact" id="contact" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+  <div class="contact-inner" id="contactInner">
+    <div class="form">
+      <h2 id="contactTitle">Say hello</h2>
+      <p class="lede">For commissions, collaborations or just a kind word.</p>
+      <form id="form" novalidate>
+        <div class="field">
+          <label for="email">Your email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+          <span class="err">Please enter a valid email</span>
+        </div>
+        <div class="field">
+          <label for="subject">Subject</label>
+          <input id="subject" name="subject" type="text" maxlength="120" required>
+          <span class="err">Add a subject</span>
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" maxlength="600" rows="4" required></textarea>
+          <span class="err">Write a short note</span>
+          <div class="count"><span id="chars">0</span> / 600</div>
+        </div>
+        <button type="submit" class="send">Send message
+          <svg viewBox="0 0 30 10" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 5h29M24 .5 29 5l-5 4.5"/></svg>
+        </button>
+      </form>
+    </div>
+    <div class="done" aria-live="polite">
+      <h2>Almost there</h2>
+      <p>Your email app should open with the message ready to send. If it didn't, copy the message and send it to <span class="addr">test@gmail.com</span>.</p>
+      <div class="done-actions">
+        <button class="send" id="copyBtn">Copy message</button>
+        <button class="send" id="againBtn">Write another</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const CONTACT_EMAIL = "test@gmail.com"; // placeholder — change to the real address
+  const body = document.body;
+  const track = document.getElementById("track");
+  const cards = [...track.querySelectorAll(".card")];
+  const arts = cards.map(c => c.querySelector(".art"));
+  const bar = document.getElementById("bar");
+  const count = document.getElementById("count");
+  const diaryLink = document.getElementById("diaryLink");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // videos: autoplay quietly; for people who prefer less motion, pause and show controls instead
+  document.querySelectorAll("video").forEach(v => {
+    if (reduce){ v.pause(); v.controls = true; }
+    else { v.muted = true; const p = v.play(); if (p && p.catch) p.catch(() => { v.controls = true; }); }
+  });
+
+  let maxX = 0, target = 0, current = 0, vw = innerWidth;
+  const clamp = v => Math.min(maxX, Math.max(0, v));
+  const isHome = () => body.classList.contains("view-home");
+  // Wide screens: sideways gallery. Phones (under 768px): plain vertical scroll.
+  const wide = matchMedia("(min-width: 768px)");
+  let horiz = wide.matches;
+  const blocked = () => !isHome() || !horiz || body.classList.contains("locked");
+
+  function layout(){
+    vw = innerWidth;
+    maxX = horiz ? Math.max(0, track.scrollWidth - vw) : 0;
+    target = clamp(target);
+  }
+  function resetTrack(){
+    target = current = 0;
+    track.style.transform = "";
+    arts.forEach(a => a.style.transform = "");
+  }
+  wide.addEventListener("change", () => {
+    horiz = wide.matches;
+    resetTrack();
+    window.scrollTo(0, 0);
+    layout();
+  });
+  function frame(){
+    requestAnimationFrame(frame);
+    if (!isHome() || !horiz) return;
+    current += (target - current) * (reduce ? 1 : 0.085);
+    if (Math.abs(target - current) < 0.05) current = target;
+    track.style.transform = `translate3d(${-current}px,0,0)`;
+
+    // gentle parallax inside each image
+    for (let i = 0; i < cards.length; i++){
+      const c = cards[i];
+      const center = c.offsetLeft + c.offsetWidth / 2 - current;
+      const d = (center - vw / 2) / vw;            // -1 … 1 roughly
+      if (!reduce) arts[i].style.transform = `translate3d(${d * -5}%,0,0)`;
+    }
+    const p = maxX ? current / maxX : 0;
+    bar.style.transform = `scaleX(${p})`;
+    // which card is nearest the centre
+    let idx = 0, best = Infinity;
+    cards.forEach((c, i) => {
+      const dist = Math.abs(c.offsetLeft + c.offsetWidth / 2 - current - vw / 2);
+      if (dist < best){ best = dist; idx = i; }
+    });
+    count.textContent = String(idx + 1).padStart(2, "0") + " / " + String(cards.length).padStart(2, "0");
+  }
+
+  /* Scroll down (or swipe left) = forward. Scroll up (or swipe right) = back. */
+  window.addEventListener("wheel", e => {
+    if (blocked()) return;
+    e.preventDefault();
+    let d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    if (e.deltaMode === 1) d *= 16; else if (e.deltaMode === 2) d *= vw;
+    target = clamp(target + d);
+  }, { passive:false });
+
+  // touch: swipe up or left moves forward, with a little momentum.
+  // Listens on the gallery stage only (not the nav), and ignores tiny movements so taps still click.
+  const stage = document.getElementById("stage");
+  let tx = 0, ty = 0, sx = 0, sy = 0, vel = 0, lastT = 0, swiping = false;
+  stage.addEventListener("touchstart", e => {
+    if (blocked()) return;
+    const t = e.touches[0]; tx = sx = t.clientX; ty = sy = t.clientY; vel = 0; swiping = false; lastT = performance.now();
+  }, { passive:true });
+  stage.addEventListener("touchmove", e => {
+    if (blocked()) return;
+    const t = e.touches[0];
+    if (!swiping && Math.hypot(t.clientX - sx, t.clientY - sy) < 8) return;
+    swiping = true;
+    const dx = tx - t.clientX, dy = ty - t.clientY;
+    tx = t.clientX; ty = t.clientY;
+    const d = Math.abs(dy) > Math.abs(dx) ? dy : dx;
+    const now = performance.now(); vel = d / Math.max(1, now - lastT); lastT = now;
+    target = clamp(target + d * 1.4);
+    if (e.cancelable) e.preventDefault();
+  }, { passive:false });
+  stage.addEventListener("touchend", () => { if (!blocked() && swiping) target = clamp(target + vel * 220); });
+
+  window.addEventListener("keydown", e => {
+    if (blocked()) return;
+    const step = vw * .45;
+    if (["ArrowDown","ArrowRight","PageDown"].includes(e.key) || (e.key === " " && !e.shiftKey)){ e.preventDefault(); target = clamp(target + step); }
+    else if (["ArrowUp","ArrowLeft","PageUp"].includes(e.key) || (e.key === " " && e.shiftKey)){ e.preventDefault(); target = clamp(target - step); }
+    else if (e.key === "Home"){ e.preventDefault(); target = 0; }
+    else if (e.key === "End"){ e.preventDefault(); target = maxX; }
+  });
+
+  document.getElementById("scrollHint").addEventListener("click", e => {
+    e.preventDefault();
+    const first = cards[0];
+    if (horiz) target = clamp(first.offsetLeft - (vw - first.offsetWidth) / 2);
+    else window.scrollTo({ top: first.getBoundingClientRect().top + window.scrollY - 88, behavior: reduce ? "auto" : "smooth" });
+  });
+  /* ---------- Views: home (horizontal gallery) and diary (grid) ----------
+     The view is switched directly by the links; the #diary address is only a bonus
+     (so the link can be bookmarked and Back works where the browser allows it). */
+  function setView(view){
+    const diary = view === "diary";
+    if (diary === body.classList.contains("view-diary")) return;
+    body.classList.toggle("view-diary", diary);
+    body.classList.toggle("view-home", !diary);
+    diaryLink.classList.toggle("active", diary);
+    diaryLink.setAttribute("aria-current", diary ? "page" : "false");
+    window.scrollTo(0, 0);
+    if (!diary) requestAnimationFrame(layout);
+  }
+  function go(view){
+    setView(view);
+    try {
+      const want = view === "diary" ? "#diary" : "";
+      if (location.hash !== want) location.hash = want;
+    } catch (_) { /* address can't change here; the view already has */ }
+  }
+  document.querySelectorAll('a[href="#diary"]').forEach(a =>
+    a.addEventListener("click", e => { e.preventDefault(); go("diary"); }));
+  document.getElementById("logo").addEventListener("click", e => {
+    e.preventDefault();
+    if (isHome()) {
+      if (horiz) target = 0;
+      else window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+      return;
+    }
+    target = current = 0;
+    go("home");
+  });
+  window.addEventListener("hashchange", () => setView(location.hash === "#diary" ? "diary" : "home"));
+
+  window.addEventListener("resize", layout);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  setView(location.hash === "#diary" ? "diary" : "home");
+  layout();
+  requestAnimationFrame(frame);
+  requestAnimationFrame(() => body.classList.add("loaded"));
+
+  /* ---------- Diary entries (placeholder art + a few words each) ----------
+     To use real photos: give each entry an `img` URL, e.g. { words:"Light on plaster", img:"photos/01.jpg" } */
+  const DIARY = [
+    "Light on plaster","First frost","Linen, drying","A bowl for lemons","Slow Sunday","Stairwell, noon",
+    "Two stones","The blue hour","Clay, unfired","Window seat","After the rain","Paper study",
+    "Studio corner","Pale morning","Small arch","Folded cloth","Tea, cooling","Late sun",
+    "Shelf of things","Quiet hallway","Pebble collection","Dried stems","Low tide","Plaster cast",
+    "Oak and wool","North light","A single chair","Evening table","Soft shadow","Rough edges",
+    "Kiln day","Market flowers","Fog study","Sand and stone","Winter wall","Closing the year"
+  ].map(words => ({ words }));
+
+  const PALETTES = [
+    ["#efebe5","#dcd4c8","#bdb4a7","#2b2926"],["#e9e4dc","#d6cdc0","#9aa294","#3a3734"],
+    ["#e8ddd1","#cdb7a3","#b98a70","#4a403a"],["#e4e1dc","#cbc7c0","#8f9aa0","#2f3336"],
+    ["#f1eee9","#e1dbd2","#c9b8a0","#26241f"],["#ddd6cc","#c6bdb0","#8f877c","#1f1d1b"]
+  ];
+  function rng(seed){ return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
+  function artSVG(i){
+    const r = rng(i * 7919 + 13);
+    const [wall, floor, accent, dark] = PALETTES[i % PALETTES.length];
+    const fy = 300 + Math.round(r() * 90);           // floor line
+    const cx = 120 + Math.round(r() * 160);
+    let m = "";
+    switch (i % 7){
+      case 0: m = `<circle cx="${cx}" cy="${fy-52}" r="52" fill="url(#ds${i})"/><ellipse cx="${cx+10}" cy="${fy}" rx="64" ry="7" fill="#000" opacity=".1"/>`; break;
+      case 1: m = `<path d="M${cx-60} ${fy}V${fy-150}a60 60 0 0 1 120 0V${fy}z" fill="${floor}"/>`; break;
+      case 2: m = `<rect x="${cx-9}" y="${fy-70}" width="18" height="70" rx="4" fill="${dark}"/><path d="M${cx} ${fy-70}c-4-50 -18-70 -30-96M${cx} ${fy-70}c4-46 16-64 28-84" stroke="#6f7566" stroke-width="2" fill="none"/>`; break;
+      case 3: m = `<ellipse cx="${cx}" cy="${fy-18}" rx="70" ry="24" fill="${dark}" opacity=".75"/><ellipse cx="${cx+6}" cy="${fy-58}" rx="50" ry="19" fill="${accent}"/><ellipse cx="${cx-2}" cy="${fy-90}" rx="32" ry="14" fill="${floor}"/>`; break;
+      case 4: m = `<circle cx="${cx}" cy="${fy-40}" r="44" fill="#f7ede2" opacity=".9"/><rect y="${fy}" width="400" height="${500-fy}" fill="${accent}" opacity=".85"/>`; break;
+      case 5: m = `<path d="M${cx-70} ${fy-60}h140a70 48 0 0 1 -140 0z" fill="${dark}"/><ellipse cx="${cx}" cy="${fy-60}" rx="70" ry="8" fill="${accent}"/>`; break;
+      case 6: m = `<rect x="${cx-55}" y="${90+Math.round(r()*40)}" width="110" height="140" fill="#f6f3ee" stroke="${floor}" stroke-width="4"/><circle cx="${cx}" cy="${170+Math.round(r()*30)}" r="26" fill="${accent}"/>`; break;
+    }
+    const beam = r() > .5 ? `<polygon points="${260+r()*80},0 400,0 400,${200+r()*120} ${120+r()*80},500 ${20+r()*60},500" fill="#fff" opacity=".28"/>` : "";
+    return `<svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs><radialGradient id="ds${i}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fbf9f6"/><stop offset=".7" stop-color="${floor}"/><stop offset="1" stop-color="${accent}"/></radialGradient></defs>
+      <rect width="400" height="500" fill="${wall}"/>
+      ${i % 7 === 4 ? "" : `<rect y="${fy}" width="400" height="${500-fy}" fill="${floor}"/>`}
+      ${m}${beam}
+      <rect width="400" height="500" filter="url(#grain)" opacity=".16"/></svg>`;
+  }
+  const fmt = new Intl.DateTimeFormat("en-GB", { day:"numeric", month:"short", year:"numeric" });
+  const start = new Date(2026, 10, 12);
+  const grid = document.getElementById("grid");
+  grid.innerHTML = DIARY.map((d, i) => {
+    const date = new Date(start); date.setDate(start.getDate() - i * 10);
+    const media = d.img ? `<img src="${d.img}" alt="${d.words}" loading="lazy">` : artSVG(i);
+    return `<figure class="entry"><div class="frame"><div class="art">${media}</div></div>
+      <figcaption class="cap"><span>${d.words}</span><span>${fmt.format(date)}</span></figcaption></figure>`;
+  }).join("");
+  document.getElementById("diaryCount").textContent = DIARY.length + " entries";
+
+  const io = "IntersectionObserver" in window ? new IntersectionObserver(es => {
+    es.forEach(en => { if (en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } });
+  }, { rootMargin:"0px 0px -5% 0px" }) : null;
+  grid.querySelectorAll(".entry").forEach((el, i) => {
+    el.style.transitionDelay = (i % 6) * 60 + "ms";
+    io ? io.observe(el) : el.classList.add("in");
+  });
+
+  /* ---------- Contact ---------- */
+  const overlay = document.getElementById("contact");
+  const inner = document.getElementById("contactInner");
+  const btn = document.getElementById("contactBtn");
+  const form = document.getElementById("form");
+  const msg = document.getElementById("message");
+  const chars = document.getElementById("chars");
+  let lastFocus = null, mailBody = "";
+
+  function openContact(){
+    lastFocus = document.activeElement;
+    overlay.classList.add("open");
+    document.body.classList.add("locked");
+    btn.textContent = "Close";
+    btn.setAttribute("aria-expanded", "true");
+    setTimeout(() => (overlay.querySelector(".sent") ? document.getElementById("copyBtn") : document.getElementById("email")).focus(), 250);
+  }
+  function closeContact(){
+    overlay.classList.remove("open");
+    document.body.classList.remove("locked");
+    btn.textContent = "Contact";
+    btn.setAttribute("aria-expanded", "false");
+    if (lastFocus) lastFocus.focus();
+  }
+  btn.addEventListener("click", () => overlay.classList.contains("open") ? closeContact() : openContact());
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.classList.contains("open")) closeContact(); });
+  overlay.addEventListener("click", e => { if (e.target === overlay) closeContact(); });
+
+  msg.addEventListener("input", () => chars.textContent = msg.value.length);
+  form.querySelectorAll("input,textarea").forEach(el =>
+    el.addEventListener("input", () => el.closest(".field").classList.remove("invalid")));
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    let ok = true;
+    const email = form.email, subject = form.subject;
+    const checks = [
+      [email, /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())],
+      [subject, subject.value.trim().length > 0],
+      [msg, msg.value.trim().length > 0],
+    ];
+    checks.forEach(([el, valid]) => { el.closest(".field").classList.toggle("invalid", !valid); if (!valid && ok){ ok = false; el.focus(); } });
+    if (!ok) return;
+
+    mailBody = msg.value.trim() + "\n\n— " + email.value.trim();
+    const href = "mailto:" + CONTACT_EMAIL + "?subject=" + encodeURIComponent(subject.value.trim()) + "&body=" + encodeURIComponent(mailBody);
+    const a = document.createElement("a"); a.href = href; a.target = "_top"; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    inner.classList.add("sent");
+    document.getElementById("copyBtn").focus();
+  });
+
+  document.getElementById("copyBtn").addEventListener("click", async ev => {
+    const b = ev.currentTarget;
+    const text = "To: " + CONTACT_EMAIL + "\nSubject: " + form.subject.value.trim() + "\n\n" + mailBody;
+    try { await navigator.clipboard.writeText(text); b.textContent = "Copied"; }
+    catch { b.textContent = "Copy unavailable — email " + CONTACT_EMAIL; }
+    setTimeout(() => b.textContent = "Copy message", 2400);
+  });
+  document.getElementById("againBtn").addEventListener("click", () => {
+    form.reset(); chars.textContent = "0"; inner.classList.remove("sent"); form.email.focus();
+  });
+
+  // simple focus trap inside the dialog
+  overlay.addEventListener("keydown", e => {
+    if (e.key !== "Tab") return;
+    const f = [btn, ...overlay.querySelectorAll("input,textarea,button")].filter(el => el.offsetParent !== null);
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  });
+})();
+</script>
+<script>
+  // applies to every video on the page, including ones you add later
+  document.querySelectorAll("video").forEach(v => {
+    v.setAttribute("controlsList", "nodownload noremoteplayback");
+    v.disablePictureInPicture = true;
+    v.setAttribute("draggable", "false");
+  });
+  // no right-click menu ("Save video as…") anywhere over a video
+  document.querySelectorAll(".card.video").forEach(card =>
+    card.addEventListener("contextmenu", e => e.preventDefault()));
+</script>
+</body>
+</html>
